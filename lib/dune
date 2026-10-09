@@ -1,0 +1,2 @@
+(library
+ (name life_in_ocaml))

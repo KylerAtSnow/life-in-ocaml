@@ -1,0 +1,4 @@
+(executable
+ (public_name life-in-ocaml)
+ (name main)
+ (libraries life_in_ocaml))
