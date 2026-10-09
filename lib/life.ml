@@ -1,41 +1,19 @@
-module type liveCell = sig
-  val x : int
-  val y : int
-end
+type cell =
+  | Cell of int * int
 
-module NeighborCells (C : liveCell) = struct
-  let neighbors = [
-    struct
-      let x = C.x - 1
-      let y = C.y - 1
-    end;
-    struct
-      let x = C.x
-      let y = C.y - 1
-    end;
-    struct
-      let x = C.x + 1
-      let y = C.y - 1
-    end;
-    struct
-      let x = C.x - 1
-      let y = C.y
-    end;
-    struct
-      let x = C.x + 1
-      let y = C.y
-    end;
-    struct
-      let x = C.x - 1
-      let y = C.y + 1
-    end;
-    struct
-      let x = C.x
-      let y = C.y + 1
-    end;
-    struct
-      let x = C.x + 1
-      let y = C.y + 1
-    end;
+let neighbors (c: cell) =
+  match (c) with
+  | Cell (x, y) -> [
+  	(Cell (x - 1, y - 1));
+  	(Cell (x + 0, y - 1));
+  	(Cell (x + 1, y - 1));
+  	(Cell (x - 1, y + 0));
+  	(Cell (x + 1, y + 0));
+  	(Cell (x - 1, y + 1));
+  	(Cell (x + 0, y + 1));
+  	(Cell (x + 1, y + 1))
   ]
-end
+
+let cellInWorld (w: cell list) (c: cell) = List.mem c w
+
+(* let countNeighbors (c: cell) *)
