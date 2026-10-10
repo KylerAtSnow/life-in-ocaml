@@ -1,38 +1,68 @@
-type cell = Cell of int * int
+module Cell =
+  struct
+    type t = int * int
+    let compare (x0,y0) (x1,y1) =
+      match Stdlib.compare x0 x1 with
+          0 -> Stdlib.compare y0 y1
+        | c -> c
+  end
 
-let compareCells (a: cell) (b: cell) =
-  match (a, b) with
-  | (Cell (ax, ay), Cell (bx, by)) when ax = bx -> Int.compare ay by
-  | (Cell (ax, ay), Cell (bx, by)) -> Int.compare ax bx
+module CellSet = Set.Make(Cell)
 
-let neighbors (c: cell) =
-  match (c) with
-  | Cell (x, y) -> [
-  	(Cell (x - 1, y - 1));
-  	(Cell (x + 0, y - 1));
-  	(Cell (x + 1, y - 1));
-  	(Cell (x - 1, y + 0));
-  	(Cell (x + 1, y + 0));
-  	(Cell (x - 1, y + 1));
-  	(Cell (x + 0, y + 1));
-  	(Cell (x + 1, y + 1))
-  ]
+(* Generations *)
+let generations = 100
+(* World or Board *)
+let w = CellSet.(
+  empty
+  |> add (0, 0)
+  |> add (1, 0)
+  |> add (2, 0)
+  |> add (2, 1)
+  |> add (1, 2)
+)
 
-let cellInWorld (w: cell list) (c: cell) = List.mem c w
+let neighbors ((x, y): int * int) = CellSet.(
+  empty
+  |> add (x - 1, y - 1)
+  |> add (x + 0, y - 1)
+  |> add (x + 1, y - 1)
+  |> add (x - 1, y + 0)
+  |> add (x + 1, y + 0)
+  |> add (x - 1, y + 1)
+  |> add (x + 0, y + 1)
+  |> add (x + 1, y + 1)
+)
 
-let countNeighbors (w: cell list) (c: cell) =
+let cellInWorld w c = CellSet.mem c w
+
+let countNeighbors w c =
   (neighbors c)
-  |> List.filter (cellInWorld w)
-  |> List.length
+  |> CellSet.filter (cellInWorld w)
+  |> CellSet.cardinal
 
-let worldAndNeighbors (w: cell list) =
-  (List.map neighbors w)
-  |> List.flatten
-  |> List.sort_uniq compareCells
+let worldAndNeighbors w =
+  CellSet.fold (fun cell acc ->
+    CellSet.union (neighbors cell) acc
+  ) w CellSet.empty
 
 (* B3/S23 *)
-let nextBoard (w: cell list) =
+let nextBoard w =
   (worldAndNeighbors w)
-  |> List.filter (fun x -> (countNeighbors w x) = 3)
-  |> List.append (List.filter (fun x -> (countNeighbors w x) = 2) w)
-  |> List.sort_uniq compareCells
+  |> CellSet.filter (fun x -> (countNeighbors w x) = 3)
+  |> CellSet.union (CellSet.filter (fun x -> (countNeighbors w x) = 2) w)
+
+let rec life w i = if i > 0 then life (nextBoard w) (i - 1) else (nextBoard w)
+
+let stringOfCell (x, y) =
+  Printf.sprintf "(%d, %d)" x y
+
+let stringOfWorld w : string =
+  w
+  |> CellSet.elements
+  |> List.map stringOfCell
+  |> String.concat "; "
+  |> Printf.sprintf "[%s]"
+
+let () = print_endline (stringOfWorld w)
+
+let () = print_endline (stringOfWorld (life w generations))
